@@ -6,6 +6,8 @@ docker kill $(docker ps -a -q)
 
 # run
 docker run --name mysql-container -e MYSQL_ROOT_PASSWORD=my-secret-pw -dp 3306:3306 mysql:latest
+# or
+docker start mysql-container
 
 # get into db
 docker exec -it mysql-container mysql -uroot -pmy-secret-pw

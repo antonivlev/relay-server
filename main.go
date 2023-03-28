@@ -2,12 +2,13 @@ package main
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"time"
 
+	"github.com/antonivlev/relay-server/api"
+	"github.com/antonivlev/relay-server/users"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -17,7 +18,7 @@ func main() {
 	fmt.Println("starting server on port 8080")
 
 	fmt.Print("  connecting to db...")
-	mySqlDb, errOpen := sql.Open("mysql", "root:my-secret-pw@(127.0.0.1:3306)/relay")
+	mySqlDb, errOpen := sql.Open("mysql", "root:my-secret-pw@(127.0.0.1:3306)/relay?parseTime=true")
 	if errOpen != nil {
 		log.Fatal(errOpen.Error())
 	}
@@ -30,7 +31,7 @@ func main() {
 	}
 	fmt.Print("done\n")
 
-	db = mySqlDb
+	users.DB = mySqlDb
 
 	fmt.Println("server running")
 	errServe := http.ListenAndServe(":8080", http.HandlerFunc(handlerOfAllRequests))
@@ -50,37 +51,7 @@ func handlerOfAllRequests(w http.ResponseWriter, r *http.Request) {
 }
 
 var routeToHandler = map[string]func(http.ResponseWriter, *http.Request){
-	"GET /users": getUsers,
-}
-
-type User struct {
-	ID        int       `json:"id"`
-	Email     string    `json:"email"`
-	Password  string    `json:"password"`
-	CreatedAt time.Time `json:"createdAt"`
-}
-
-func getUsers(w http.ResponseWriter, r *http.Request) {
-	rowsUsers, errQuery := db.Query("SELECT id, email, password FROM users;")
-	if errQuery != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "error querying users: %v", errQuery)
-		return
-	}
-
-	var users []User
-	for rowsUsers.Next() {
-		var user User
-		errScan := rowsUsers.Scan(&user.ID, &user.Email, &user.Password)
-		if errScan != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "error scanning user: %v", errScan)
-			return
-		}
-
-		users = append(users, user)
-	}
-
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(users)
+	"GET /users":  users.GetUsers,
+	"POST /users": users.PostUsers,
+	"POST /api/*": api.PostApi,
 }
