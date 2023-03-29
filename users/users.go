@@ -12,13 +12,13 @@ type User struct {
 	ID        int       `json:"id"`
 	CreatedAt time.Time `json:"createdAt"`
 	Email     string    `json:"email"`
-	Password  string    `json:"password"`
+	Password  string    `json:"-"`
 }
 
 var DB *sql.DB
 
 func GetUsers(w http.ResponseWriter, r *http.Request) {
-	rowsUsers, errQuery := DB.Query("SELECT id, email, password FROM users;")
+	rowsUsers, errQuery := DB.Query("SELECT id, created_at, email FROM users;")
 	if errQuery != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "%v", errQuery)
@@ -28,7 +28,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	var users []User
 	for rowsUsers.Next() {
 		var user User
-		errScan := rowsUsers.Scan(&user.ID, &user.Email, &user.Password)
+		errScan := rowsUsers.Scan(&user.ID, &user.CreatedAt, &user.Email)
 		if errScan != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "%v", errScan)
@@ -38,7 +38,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 		users = append(users, user)
 	}
 
-	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(users)
 }
 
@@ -66,18 +66,29 @@ func PostUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var newUser User
-	userRow := DB.QueryRow("SELECT id, created_at, email, password FROM users WHERE id = ?;", newUserId)
-	errScan := userRow.Scan(&newUser.ID, &newUser.CreatedAt, &newUser.Email, &newUser.Password)
+	userRow := DB.QueryRow("SELECT id, created_at, email FROM users WHERE id = ?;", newUserId)
+	errScan := userRow.Scan(&newUser.ID, &newUser.CreatedAt, &newUser.Email)
 	if errScan != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "%v", errScan)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(newUser)
 }
 
-func Login(w http.ResponseWriter, r *http.Request) {
-	// TODO
+func PostLogin(w http.ResponseWriter, r *http.Request) {
+	var userTryingToLogIn User
+	errDecode := json.NewDecoder(r.Body).Decode(&userTryingToLogIn)
+	if errDecode != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "%+v", errDecode)
+		return
+	}
+
+	matchedUserRow := DB.QueryRow("SELECT id, created_at, email FROM users WHERE email = ? AND password = ?;", userTryingToLogIn.Email, userTryingToLogIn.Password)
+	fmt.Printf("%+v\n", matchedUserRow)
+
+	w.WriteHeader(http.StatusOK)
 }

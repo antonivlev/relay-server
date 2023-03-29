@@ -12,8 +12,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-var db *sql.DB
-
 func main() {
 	fmt.Println("starting server on port 8080")
 
@@ -51,6 +49,7 @@ func handlerOfAllRequests(w http.ResponseWriter, r *http.Request) {
 }
 
 var routeToHandler = map[string]func(http.ResponseWriter, *http.Request){
+	"POST /login": users.PostLogin,
 	"GET /users":  users.GetUsers,
 	"POST /users": users.PostUsers,
 	"POST /api/*": api.PostApi,
