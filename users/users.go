@@ -2,6 +2,7 @@ package users
 
 import (
 	"database/sql"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -13,6 +14,7 @@ type User struct {
 	CreatedAt time.Time `json:"createdAt"`
 	Email     string    `json:"email"`
 	Password  string    `json:"-"`
+	NumTokens float64   `json:"numTokens"`
 }
 
 var DB *sql.DB
@@ -79,16 +81,31 @@ func PostUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func PostLogin(w http.ResponseWriter, r *http.Request) {
-	var userTryingToLogIn User
-	errDecode := json.NewDecoder(r.Body).Decode(&userTryingToLogIn)
+	var emailAndPassword struct{ Email, Password string }
+	errDecode := json.NewDecoder(r.Body).Decode(&emailAndPassword)
 	if errDecode != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, "%+v", errDecode)
 		return
 	}
 
-	matchedUserRow := DB.QueryRow("SELECT id, created_at, email FROM users WHERE email = ? AND password = ?;", userTryingToLogIn.Email, userTryingToLogIn.Password)
-	fmt.Printf("%+v\n", matchedUserRow)
+	matchedUserRow := DB.QueryRow("SELECT id, created_at, email FROM users WHERE email = ? AND password = ?;", emailAndPassword.Email, emailAndPassword.Password)
+	var matchedUser User
+	errScan := matchedUserRow.Scan(&matchedUser.ID, &matchedUser.CreatedAt, &matchedUser.Email)
+	if errScan != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		fmt.Fprintf(w, "%v", errScan)
+		return
+	}
 
-	w.WriteHeader(http.StatusOK)
+	emailColonPassword := matchedUser.Email + ":" + matchedUser.Password
+	accessToken := base64.StdEncoding.EncodeToString([]byte(emailColonPassword))
+
+	var accessTokenResponse struct {
+		AccessToken string `json:"accessToken"`
+	}
+	accessTokenResponse.AccessToken = accessToken
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(accessTokenResponse)
 }
