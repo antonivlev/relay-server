@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"regexp"
 	"time"
 
 	"github.com/antonivlev/relay-server/api"
@@ -39,12 +40,22 @@ func main() {
 
 var DB *sql.DB
 
+var publicRouteToHandler = map[string]func(http.ResponseWriter, *http.Request){
+	"POST /login": users.PostLogin,
+}
+
+var routeToHandler = map[string]func(http.ResponseWriter, *http.Request){
+	"GET /users":      users.GetUsers,
+	"POST /users":     users.PostUsers,
+	"POST /openai/.*": api.PostApi,
+}
+
 func handlerOfAllRequests(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(time.Now().Format("2006-01-02 15:04:05"), r.Method, r.RequestURI)
 
 	route := r.Method + " " + r.RequestURI
 
-	publicRouteHandler := publicRouteToHandler[route]
+	publicRouteHandler := getHandlerFromRouteToHandlerMap(route, publicRouteToHandler)
 	if publicRouteHandler != nil {
 		publicRouteHandler(w, r)
 		return
@@ -55,7 +66,7 @@ func handlerOfAllRequests(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	routeHandler := routeToHandler[route]
+	routeHandler := getHandlerFromRouteToHandlerMap(route, routeToHandler)
 	if routeHandler != nil {
 		routeHandler(w, r)
 		return
@@ -64,15 +75,15 @@ func handlerOfAllRequests(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
 }
 
-var publicRouteToHandler = map[string]func(http.ResponseWriter, *http.Request){
-	"POST /login": users.PostLogin,
-}
+func getHandlerFromRouteToHandlerMap(route string, routeToHandler map[string]func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
+	for k, _ := range routeToHandler {
+		isMatched, _ := regexp.MatchString(k, route)
+		if isMatched {
+			return routeToHandler[k]
+		}
+	}
 
-var routeToHandler = map[string]func(http.ResponseWriter, *http.Request){
-	"POST /login": users.PostLogin,
-	"GET /users":  users.GetUsers,
-	"POST /users": users.PostUsers,
-	"POST /api/*": api.PostApi,
+	return nil
 }
 
 func isUserAuthorized(r *http.Request) bool {
