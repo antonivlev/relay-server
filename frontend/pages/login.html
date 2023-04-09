@@ -1,0 +1,54 @@
+<style>
+  .container {
+    display: grid;
+    align-content: center;
+    padding-top: 200px;
+    gap: 10px;
+    width: 200px;
+    margin: 0 auto;
+  }
+
+  button {
+    margin-top: 40px;
+  }
+
+  #err-msg {
+    color: red;
+  }
+</style>
+
+<div class="container">
+  <input id="email" type="email" placeholder="Email" />
+  <input id="password" type="password" placeholder="Password" />
+  <button onclick="doLogInAndRedirect()">Log in</button>
+  <div id="err-msg"></div>
+</div>
+
+<script src="public/scripts/utils.js" ></script>
+<script>
+  document.addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+      doLogInAndRedirect();
+    }
+  });
+
+  const doLogInAndRedirect = async () => {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const errMsgDiv = document.getElementById("err-msg");
+
+    if (!email || !password) {
+      errMsgDiv.innerHTML = "Please fill in all fields";
+      return;
+    }
+
+    const { data, error } = await doPost("/api/login", { email, password });
+    if (error) {
+      errMsgDiv.innerHTML = error;
+      return;
+    }
+
+    document.cookie = `accessToken=${data.accessToken};`;
+    window.location = "/";
+  };
+</script>

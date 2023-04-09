@@ -94,7 +94,7 @@ func PostLogin(w http.ResponseWriter, r *http.Request) {
 	errScan := matchedUserRow.Scan(&matchedUser.ID, &matchedUser.CreatedAt, &matchedUser.Email)
 	if errScan != nil {
 		w.WriteHeader(http.StatusUnauthorized)
-		fmt.Fprintf(w, "%v", errScan)
+		fmt.Fprintf(w, "%v", "Email and password do not match.")
 		return
 	}
 

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/antonivlev/relay-server/api"
+	"github.com/antonivlev/relay-server/frontend"
 	"github.com/antonivlev/relay-server/users"
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -40,20 +41,33 @@ func main() {
 
 var DB *sql.DB
 
+var pageRouteToHandler = map[string]func(http.ResponseWriter, *http.Request){
+	"GET /":                        frontend.GetHomePage,
+	"GET /login":                   frontend.GetLoginPage,
+	"GET /favicon.ico":             frontend.GetFavicon,
+	"GET /public/scripts/utils.js": frontend.GetScripts,
+}
+
 var publicRouteToHandler = map[string]func(http.ResponseWriter, *http.Request){
-	"POST /login": users.PostLogin,
+	"POST /api/login": users.PostLogin,
 }
 
 var routeToHandler = map[string]func(http.ResponseWriter, *http.Request){
-	"GET /users":      users.GetUsers,
-	"POST /users":     users.PostUsers,
-	"POST /openai/.*": api.PostApi,
+	"GET /api/users":      users.GetUsers,
+	"POST /api/users":     users.PostUsers,
+	"POST /api/openai/.*": api.PostApi,
 }
 
 func handlerOfAllRequests(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(time.Now().Format("2006-01-02 15:04:05"), r.Method, r.RequestURI)
 
 	route := r.Method + " " + r.RequestURI
+
+	pageRouteHandler := pageRouteToHandler[route]
+	if pageRouteHandler != nil {
+		pageRouteHandler(w, r)
+		return
+	}
 
 	publicRouteHandler := getHandlerFromRouteToHandlerMap(route, publicRouteToHandler)
 	if publicRouteHandler != nil {

@@ -7,7 +7,7 @@ import (
 var OPEN_AI_SK = "sk-..."
 
 func PostApi(w http.ResponseWriter, r *http.Request) {
-	targetReq, err := http.NewRequest(r.Method, "https://api.openai.com"+r.RequestURI[7:], r.Body)
+	targetReq, err := http.NewRequest(r.Method, "https://api.openai.com"+r.RequestURI[11:], r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
