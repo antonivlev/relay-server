@@ -98,7 +98,7 @@ func PostLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	emailColonPassword := matchedUser.Email + ":" + matchedUser.Password
+	emailColonPassword := emailAndPassword.Email + ":" + emailAndPassword.Password
 	accessToken := base64.StdEncoding.EncodeToString([]byte(emailColonPassword))
 
 	var accessTokenResponse struct {

@@ -44,11 +44,11 @@
 
 <div class="top-bar">
   <div></div>
-  <button>Logout</button>
+  <button onclick="clearCookieAndReedirect()">Logout</button>
 </div>
 
 <div id="container" class="container">
-  <button onclick="doGeneratePositive">Positive</button>
+  <button onclick="doGeneratePositive()">Positive</button>
   <button>Neutral</button>
   <button>Negative</button>
   <input placeholder="Article title" />
@@ -56,6 +56,28 @@
   <div id="err-msg"></div>
 </div>
 
+<script src="public/scripts/utils.js"></script>
 <script>
-  const doGeneratePositive = async () => {};
+  const clearCookieAndReedirect = () => {
+    document.cookie = "";
+    window.location = "/login";
+  };
+
+  const doGeneratePositive = async () => {
+    const prompt =
+      "Continue this news article, in a positive light, title: 'Donald trump gets arrested', text: ";
+
+    const { error } = await doPostAndStreamResponse({
+      url: "/api/openai/v1/completions",
+      reqBody: {
+        model: "curie",
+        prompt,
+        max_tokens: 100,
+        stream: true,
+      },
+      onDataRecieved: data => console.log(data),
+    });
+
+    console.log("error: ", error);
+  };
 </script>
