@@ -44,40 +44,42 @@
 
 <div class="top-bar">
   <div></div>
-  <button onclick="clearCookieAndReedirect()">Logout</button>
+  <button onclick="clearCookieAndRedirect()">Logout</button>
 </div>
 
 <div id="container" class="container">
-  <button onclick="doGeneratePositive()">Positive</button>
-  <button>Neutral</button>
-  <button>Negative</button>
   <input placeholder="Article title" />
+  <button onclick="doGenerate({ sentiment: 'postive' })">Positive</button>
+  <button onclick="doGenerate({ sentiment: 'neutral' })">Neutral</button>
+  <button onclick="doGenerate({ sentiment: 'negative' })">Negative</button>
   <textarea placeholder="Article text"></textarea>
   <div id="err-msg"></div>
 </div>
 
 <script src="public/scripts/utils.js"></script>
 <script>
-  const clearCookieAndReedirect = () => {
+  const clearCookieAndRedirect = () => {
     document.cookie = "";
     window.location = "/login";
   };
 
-  const doGeneratePositive = async () => {
-    const prompt =
-      "Continue this news article, in a positive light, title: 'Donald trump gets arrested', text: ";
+  const doGenerate = async ({ sentiment = "positive" }) => {
+    const textArea = document.querySelector(".container textarea");
+    const articleText = textArea.value;
+    const articleTitle = document.querySelector(".container input").value;
+    const prompt = `Continue this news article, in a ${sentiment} light, title: '${articleTitle}', text: ${articleText}`;
 
     const { error } = await doPostAndStreamResponse({
       url: "/api/openai/v1/completions",
       reqBody: {
-        model: "curie",
+        model: "text-davinci-003",
         prompt,
-        max_tokens: 100,
+        max_tokens: 50,
         stream: true,
       },
-      onDataRecieved: data => console.log(data),
+      onDataRecieved: data => {
+        textArea.value = textArea.value + data;
+      },
     });
-
-    console.log("error: ", error);
   };
 </script>

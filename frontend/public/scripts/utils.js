@@ -1,3 +1,11 @@
+const parseJson = jsonStr => {
+  try {
+    return JSON.parse(jsonStr);
+  } catch (e) {
+    return null;
+  }
+};
+
 const getAuthHeaderFromCookies = () => {
   if (!document.cookie) {
     return {};
@@ -47,7 +55,7 @@ const doPostAndStreamResponse = async ({ url, reqBody, onDataRecieved }) => {
   });
 
   if (!res.ok || !res.body) {
-    return { error: "Response not ok orbody is  empty" };
+    return { error: "Response not ok or body is  empty" };
   }
 
   const resBody = await res.body;
@@ -61,7 +69,7 @@ const doPostAndStreamResponse = async ({ url, reqBody, onDataRecieved }) => {
     }
     const chunkString = decoder.decode(value, { stream: true }) || "";
     const jsonStr = chunkString.match("{.*}")?.[0] || "";
-    const resultJson = JSON.parse(jsonStr);
+    const resultJson = parseJson(jsonStr);
 
     const predictedText = resultJson?.choices?.[0]?.text;
 
