@@ -13,16 +13,18 @@ docker start mysql-container
 docker exec -it mysql-container mysql -uroot -pmy-secret-pw
 
 # create db
+USE relay;
 CREATE TABLE users (
   id INT AUTO_INCREMENT,
   created_at DATETIME,
   email TEXT NOT NULL,
+  number_of_tokens FLOAT,
   password TEXT NOT NULL,
   PRIMARY KEY (id)
 );
 
 INSERT INTO users 
-  (email, password) 
+  (email, password, created_at) 
 VALUES 
-  ("anton@mail.com", "12345");
+  ("anton@mail.com", "12345", NOW());
 ```

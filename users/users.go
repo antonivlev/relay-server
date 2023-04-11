@@ -10,11 +10,11 @@ import (
 )
 
 type User struct {
-	ID        int       `json:"id"`
-	CreatedAt time.Time `json:"createdAt"`
-	Email     string    `json:"email"`
-	Password  string    `json:"-"`
-	NumTokens float64   `json:"numTokens"`
+	ID             int       `json:"id"`
+	CreatedAt      time.Time `json:"createdAt"`
+	Email          string    `json:"email"`
+	Password       string    `json:"-"`
+	NumberOfTokens float64   `json:"numberOfTokens"`
 }
 
 var DB *sql.DB

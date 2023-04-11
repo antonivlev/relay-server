@@ -32,6 +32,7 @@ func main() {
 	fmt.Print("done\n")
 
 	users.DB = mySqlDb
+	api.DB = mySqlDb
 	DB = mySqlDb
 
 	fmt.Println("server running")
