@@ -6,6 +6,24 @@ const parseJson = jsonStr => {
   }
 };
 
+const getEmailFromAccessTokenFromCookies = () => {
+  if (!document.cookie) {
+    return null;
+  }
+
+  const accessToken = document.cookie
+    .split(";")
+    .find(row => row.startsWith("accessToken"))
+    .split("accessToken=")?.[1];
+
+  if (!accessToken) {
+    return null;
+  }
+
+  const email = atob(accessToken)?.split(":")?.[0];
+  return email;
+};
+
 const getAuthHeaderFromCookies = () => {
   if (!document.cookie) {
     return {};

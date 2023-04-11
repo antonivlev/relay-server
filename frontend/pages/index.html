@@ -13,7 +13,7 @@
   .top-bar {
     width: 100%;
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 1fr repeat(3, auto);
     align-items: center;
     padding: 10px;
     gap: 10px;
@@ -44,6 +44,8 @@
 
 <div class="top-bar">
   <div></div>
+  <div id="balance"></div>
+  <div id="email"></div>
   <button onclick="clearCookieAndRedirect()">Logout</button>
 </div>
 
@@ -78,8 +80,18 @@
         stream: true,
       },
       onDataRecieved: data => {
+        if (articleText === "" && data === "\n") {
+          return;
+        }
         textArea.value = textArea.value + data;
       },
     });
   };
+
+  const doPopulateEmailAndBalance = async () => {
+    const email = getEmailFromAccessTokenFromCookies();
+    document.querySelector("#email").innerHTML = email;
+  };
+
+  doPopulateEmailAndBalance();
 </script>
