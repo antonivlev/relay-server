@@ -86,11 +86,17 @@
         textArea.value = textArea.value + data;
       },
     });
+
+    const { data: user } = await doGet("/api/user");
+    document.querySelector("#balance").innerHTML = user?.numberOfTokens;
   };
 
   const doPopulateEmailAndBalance = async () => {
     const email = getEmailFromAccessTokenFromCookies();
     document.querySelector("#email").innerHTML = email;
+
+    const { data: user } = await doGet("/api/user");
+    document.querySelector("#balance").innerHTML = user?.numberOfTokens;
   };
 
   doPopulateEmailAndBalance();

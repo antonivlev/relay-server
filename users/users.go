@@ -19,8 +19,24 @@ type User struct {
 
 var DB *sql.DB
 
+func GetUser(w http.ResponseWriter, r *http.Request) {
+	email, _, _ := r.BasicAuth()
+	rowUser := DB.QueryRow("SELECT id, created_at, email, number_of_tokens FROM users WHERE email = ?;", email)
+
+	var user User
+	errScan := rowUser.Scan(&user.ID, &user.CreatedAt, &user.Email, &user.NumberOfTokens)
+	if errScan != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "%v", errScan)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(user)
+}
+
 func GetUsers(w http.ResponseWriter, r *http.Request) {
-	rowsUsers, errQuery := DB.Query("SELECT id, created_at, email FROM users;")
+	rowsUsers, errQuery := DB.Query("SELECT id, created_at, email, number_of_tokens FROM users;")
 	if errQuery != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "%v", errQuery)
@@ -30,7 +46,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	var users []User
 	for rowsUsers.Next() {
 		var user User
-		errScan := rowsUsers.Scan(&user.ID, &user.CreatedAt, &user.Email)
+		errScan := rowsUsers.Scan(&user.ID, &user.CreatedAt, &user.Email, &user.NumberOfTokens)
 		if errScan != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "%v", errScan)

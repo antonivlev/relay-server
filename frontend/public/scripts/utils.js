@@ -43,6 +43,22 @@ const getAuthHeaderFromCookies = () => {
   };
 };
 
+const doGet = async url => {
+  const res = await fetch(url, {
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeaderFromCookies(),
+    },
+  });
+  if (!res.ok) {
+    const resContent = await res.text();
+    return { data: null, error: resContent };
+  }
+
+  const resJson = await res.json();
+  return { data: resJson, error: null };
+};
+
 const doPost = async (url, body) => {
   const res = await fetch(url, {
     method: "POST",

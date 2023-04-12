@@ -55,6 +55,7 @@ var publicRouteToHandler = map[string]func(http.ResponseWriter, *http.Request){
 
 var routeToHandler = map[string]func(http.ResponseWriter, *http.Request){
 	"GET /api/users":      users.GetUsers,
+	"GET /api/user":       users.GetUser,
 	"POST /api/users":     users.PostUsers,
 	"POST /api/openai/.*": api.PostApi,
 }
