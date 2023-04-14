@@ -43,10 +43,11 @@ func main() {
 var DB *sql.DB
 
 var pageRouteToHandler = map[string]func(http.ResponseWriter, *http.Request){
-	"GET /":                        frontend.GetHomePage,
-	"GET /login":                   frontend.GetLoginPage,
-	"GET /favicon.ico":             frontend.GetFavicon,
-	"GET /public/scripts/utils.js": frontend.GetScripts,
+	"GET /":                              frontend.GetHomePage,
+	"GET /login":                         frontend.GetLoginPage,
+	"GET /favicon.ico":                   frontend.GetFavicon,
+	"GET /public/scripts/utils.js":       frontend.GetScripts,
+	"GET /public/stylesheets/global.css": frontend.GetStyleSheets,
 }
 
 var publicRouteToHandler = map[string]func(http.ResponseWriter, *http.Request){

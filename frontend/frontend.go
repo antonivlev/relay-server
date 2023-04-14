@@ -38,3 +38,12 @@ func GetScripts(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Write(fileData)
 }
+
+func GetStyleSheets(w http.ResponseWriter, r *http.Request) {
+	fileData, err := os.ReadFile("frontend/public/stylesheets/global.css")
+	if err != nil {
+		w.Write([]byte(err.Error()))
+		return
+	}
+	w.Write(fileData)
+}
