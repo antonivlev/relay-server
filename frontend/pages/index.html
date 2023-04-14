@@ -85,6 +85,9 @@
         if (articleText === "" && data === "\n") {
           return;
         }
+        if (data === undefined) {
+          return;
+        }
         textArea.value = textArea.value + data;
       },
     });
